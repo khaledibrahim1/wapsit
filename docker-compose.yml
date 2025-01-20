@@ -1,0 +1,35 @@
+ 
+services:
+  mongodb:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')", "--username", "admin", "--password", "admin", "--authenticationDatabase", "admin"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    ports:
+      - 8085:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: myuser  # تغيير اسم المستخدم لـ mongo-express
+      ME_CONFIG_BASICAUTH_PASSWORD: mypassword  # تغيير كلمة المرور لـ mongo-express
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  mongodb_data_container:
